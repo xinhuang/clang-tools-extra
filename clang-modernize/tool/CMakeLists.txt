@@ -25,6 +25,9 @@ list(APPEND ClangModernizeSources ${PassByValueSources})
 file(GLOB_RECURSE ReplaceAutoPtrSources "../ReplaceAutoPtr/*.cpp")
 list(APPEND ClangModernizeSources ${ReplaceAutoPtrSources})
 
+file(GLOB_RECURSE UseStdBeginSources "../UseStdBegin/*.cpp")
+list(APPEND ClangModernizeSources ${UseStdBeginSources})
+
 add_clang_executable(clang-modernize
   ${ClangModernizeSources}
   )

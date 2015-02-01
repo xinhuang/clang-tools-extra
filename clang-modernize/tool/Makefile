@@ -34,6 +34,8 @@ SOURCES += $(addprefix ../PassByValue/,$(notdir $(wildcard $(PROJ_SRC_DIR)/../Pa
 BUILT_SOURCES += $(ObjDir)/../PassByValue/.objdir
 SOURCES += $(addprefix ../ReplaceAutoPtr/,$(notdir $(wildcard $(PROJ_SRC_DIR)/../ReplaceAutoPtr/*.cpp)))
 BUILT_SOURCES += $(ObjDir)/../ReplaceAutoPtr/.objdir
+SOURCES += $(addprefix ../UseStdBegin/,$(notdir $(wildcard $(PROJ_SRC_DIR)/../UseStdBegin/*.cpp)))
+BUILT_SOURCES += $(ObjDir)/../UseStdBegin/.objdir
 
 LINK_COMPONENTS := $(TARGETS_TO_BUILD) asmparser bitreader support mc mcparser option
 USEDLIBS = modernizeCore.a clangFormat.a \
