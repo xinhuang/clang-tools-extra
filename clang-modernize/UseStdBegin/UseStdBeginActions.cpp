@@ -19,31 +19,28 @@ std::string getStringInRange(const SourceManager &SM, const Stmt &ST) {
   return std::string(CharStart, CharEnd + 1);
 }
 
-void MemberBeginReplacer::run(const MatchFinder::MatchResult &result) {
-  const auto *memberCall =
-      result.Nodes.getNodeAs<CXXMemberCallExpr>(CallExprID);
+void MemberBeginReplacer::run(const MatchFinder::MatchResult &Result) {
+  const auto *MemberCall =
+      Result.Nodes.getNodeAs<CXXMemberCallExpr>(CallExprID);
 
-  const auto &sourceMgr = *result.SourceManager;
-  std::string refName;
-  if (const auto *memberExpr = dyn_cast<MemberExpr>(memberCall->getCallee())) {
-    refName = getStringInRange(sourceMgr, *memberExpr->getBase());
+  const auto &SM = *Result.SourceManager;
+  const auto *Member = dyn_cast<MemberExpr>(MemberCall->getCallee());
+  if (Member == nullptr) {
+    return;
   }
+  const auto &Instance = *Member->getBase();
+  const auto &RefName = getStringInRange(SM, Instance);
+  bool IsConst = Instance.getType().isConstQualified();
 
-  const auto &methodName = memberCall->getMethodDecl()->getNameAsString();
-  const auto startLoc = sourceMgr.getSpellingLoc(memberCall->getLocStart());
-  const auto endLoc = sourceMgr.getSpellingLoc(memberCall->getLocEnd());
-
-  // if (printLocations) {
-  //   outs() << sourceMgr.getFilename(startLoc) << ":"
-  //          << sourceMgr.getSpellingLineNumber(startLoc) << ":"
-  //          << sourceMgr.getSpellingColumnNumber(startLoc) << "\n";
-  // }
+  auto MethodName = MemberCall->getMethodDecl()->getNameAsString();
+  MethodName = IsConst ? "c" + MethodName : MethodName;
+  const auto StartLoc = SM.getSpellingLoc(MemberCall->getLocStart());
+  const auto EndLoc = SM.getSpellingLoc(MemberCall->getLocEnd());
 
   // FIXME: add #include <iterator>
-  std::string replacememnt("std::" + methodName + "(" + refName);
-  auto length =
-      sourceMgr.getFileOffset(endLoc) - sourceMgr.getFileOffset(startLoc);
+  std::string Replacement("std::" + MethodName + "(" + RefName);
+  auto Length = SM.getFileOffset(EndLoc) - SM.getFileOffset(StartLoc);
   Owner.addReplacementForCurrentTU(
-      tooling::Replacement(sourceMgr, startLoc, length, replacememnt));
+      tooling::Replacement(SM, StartLoc, Length, Replacement));
   ++AcceptedChanges;
 }

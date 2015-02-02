@@ -493,6 +493,7 @@ extern volatile int PassByValueTransformAnchorSource;
 extern volatile int ReplaceAutoPtrTransformAnchorSource;
 extern volatile int UseAutoTransformAnchorSource;
 extern volatile int UseNullptrTransformAnchorSource;
+extern volatile int UseStdBeginTransformAnchorSource;
 
 static int TransformsAnchorsDestination[] = {
   AddOverrideTransformAnchorSource,
@@ -500,5 +501,6 @@ static int TransformsAnchorsDestination[] = {
   PassByValueTransformAnchorSource,
   ReplaceAutoPtrTransformAnchorSource,
   UseAutoTransformAnchorSource,
-  UseNullptrTransformAnchorSource
+  UseNullptrTransformAnchorSource,
+  UseStdBeginTransformAnchorSource,
 };

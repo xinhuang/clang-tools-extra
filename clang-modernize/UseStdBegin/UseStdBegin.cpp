@@ -40,7 +40,7 @@ struct UseStdBeginFactory : TransformFactory {
 
 // Register the factory using this statically initialized variable.
 static TransformFactoryRegistry::Add<UseStdBeginFactory>
-X("use-std-begin", "Replace memberwise begin/end by std::begin(...)/std::end(...)"
+X("use-std-begin", "Replace memberwise begin/end by std::begin/std::end or std::cbegin/std::cend"
                       " (EXPERIMENTAL)");
 
 // This anchor is used to force the linker to link in the generated object file
