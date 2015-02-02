@@ -13,7 +13,7 @@ public:
       : AcceptedChanges(AcceptedChanges), Owner(Owner) {}
 
   virtual void
-  run(const clang::ast_matchers::MatchFinder::MatchResult &result) final;
+  run(const clang::ast_matchers::MatchFinder::MatchResult &Result) final;
 
 private:
   unsigned &AcceptedChanges;
