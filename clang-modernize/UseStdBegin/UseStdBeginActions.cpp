@@ -11,12 +11,12 @@ using namespace clang::ast_matchers;
 
 #include <string>
 
-std::string getStringInRange(const SourceManager &SM, const Stmt &ST) {
-  const auto &LocStart = ST.getLocStart();
-  const auto &LocEnd = ST.getLocEnd();
+std::string getCalleeName(const SourceManager &SM, const Expr &E) {
+  const auto &LocStart = E.getLocStart();
+  const auto &LocEnd = E.getLocEnd();
   const char *CharStart = SM.getCharacterData(LocStart);
   const char *CharEnd = SM.getCharacterData(LocEnd);
-  return std::string(CharStart, CharEnd + 1);
+  return std::string(CharStart, CharEnd - 1);
 }
 
 void MemberBeginReplacer::run(const MatchFinder::MatchResult &Result) {
@@ -28,9 +28,8 @@ void MemberBeginReplacer::run(const MatchFinder::MatchResult &Result) {
   if (Member == nullptr) {
     return;
   }
-  const auto &Instance = *Member->getBase();
-  const auto &RefName = getStringInRange(SM, Instance);
-  bool IsConst = Instance.getType().isConstQualified();
+  const auto &RefName = getCalleeName(SM, *Member);
+  bool IsConst = Member->getBase()->getType().isConstQualified();
 
   auto MethodName = MemberCall->getMethodDecl()->getNameAsString();
   MethodName = IsConst ? "c" + MethodName : MethodName;
