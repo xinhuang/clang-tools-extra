@@ -1,0 +1,60 @@
+//===--- ModernizeTidyModule.cpp - clang-tidy -----------------------------===//
+//
+//                     The LLVM Compiler Infrastructure
+//
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
+
+#include "../ClangTidy.h"
+#include "../ClangTidyModule.h"
+#include "../ClangTidyModuleRegistry.h"
+#include "LoopConvertCheck.h"
+#include "PassByValueCheck.h"
+#include "ReplaceAutoPtrCheck.h"
+#include "UseAutoCheck.h"
+#include "UseNullptrCheck.h"
+
+using namespace clang::ast_matchers;
+
+namespace clang {
+namespace tidy {
+namespace modernize {
+
+class ModernizeModule : public ClangTidyModule {
+public:
+  void addCheckFactories(ClangTidyCheckFactories &CheckFactories) override {
+    CheckFactories.registerCheck<LoopConvertCheck>("modernize-loop-convert");
+    CheckFactories.registerCheck<PassByValueCheck>("modernize-pass-by-value");
+    CheckFactories.registerCheck<ReplaceAutoPtrCheck>(
+        "modernize-replace-auto-ptr");
+    CheckFactories.registerCheck<UseAutoCheck>("modernize-use-auto");
+    CheckFactories.registerCheck<UseNullptrCheck>("modernize-use-nullptr");
+  }
+
+  ClangTidyOptions getModuleOptions() override {
+    ClangTidyOptions Options;
+    auto &Opts = Options.CheckOptions;
+    Opts["modernize-loop-convert.MinConfidence"] = "reasonable";
+    Opts["modernize-pass-by-value.IncludeStyle"] = "llvm"; // Also: "google".
+    Opts["modernize-replace-auto-ptr.IncludeStyle"] = "llvm"; // Also: "google".
+
+    // Comma-separated list of macros that behave like NULL.
+    Opts["modernize-use-nullptr.NullMacros"] = "NULL";
+    return Options;
+  }
+};
+
+// Register the ModernizeTidyModule using this statically initialized variable.
+static ClangTidyModuleRegistry::Add<ModernizeModule> X("modernize-module",
+                                                       "Add modernize checks.");
+
+} // namespace modernize
+
+// This anchor is used to force the linker to link in the generated object file
+// and thus register the ModernizeModule.
+volatile int ModernizeModuleAnchorSource = 0;
+
+} // namespace tidy
+} // namespace clang

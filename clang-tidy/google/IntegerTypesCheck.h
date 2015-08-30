@@ -14,11 +14,13 @@
 
 namespace clang {
 namespace tidy {
+namespace google {
 namespace runtime {
 
-/// \brief Finds uses of short, long and long long and suggest replacing them
-/// with u?intXX(_t)?.
-/// Correspondig cpplint.py check: runtime/int.
+/// Finds uses of `short`, `long` and `long long` and suggest replacing them
+/// with `u?intXX(_t)?`.
+///
+/// Correspondig cpplint.py check: 'runtime/int'.
 class IntegerTypesCheck : public ClangTidyCheck {
 public:
   IntegerTypesCheck(StringRef Name, ClangTidyContext *Context)
@@ -34,6 +36,7 @@ private:
 };
 
 } // namespace runtime
+} // namespace google
 } // namespace tidy
 } // namespace clang
 

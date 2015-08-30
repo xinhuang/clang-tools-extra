@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_TOOLS_EXTRA_CLANG_TIDY_CLANG_TIDY_DIAGNOSTIC_CONSUMER_H
-#define LLVM_CLANG_TOOLS_EXTRA_CLANG_TIDY_CLANG_TIDY_DIAGNOSTIC_CONSUMER_H
+#ifndef LLVM_CLANG_TOOLS_EXTRA_CLANG_TIDY_CLANGTIDYDIAGNOSTICCONSUMER_H
+#define LLVM_CLANG_TOOLS_EXTRA_CLANG_TIDY_CLANGTIDYDIAGNOSTICCONSUMER_H
 
 #include "ClangTidyOptions.h"
 #include "clang/Basic/Diagnostic.h"
@@ -143,8 +143,14 @@ public:
   /// \brief Should be called when starting to process new translation unit.
   void setCurrentFile(StringRef File);
 
+  /// \brief Returns the main file name of the current translation unit.
+  StringRef getCurrentFile() const { return CurrentFile; }
+
   /// \brief Sets ASTContext for the current translation unit.
   void setASTContext(ASTContext *Context);
+
+  /// \brief Gets the language options from the AST context
+  LangOptions getLangOpts() const { return LangOpts; }
 
   /// \brief Returns the name of the clang-tidy check which produced this
   /// diagnostic ID.
@@ -195,6 +201,8 @@ private:
   ClangTidyOptions CurrentOptions;
   std::unique_ptr<GlobList> CheckFilter;
 
+  LangOptions LangOpts;
+
   ClangTidyStats Stats;
 
   llvm::DenseMap<unsigned, std::string> CheckNamesByDiagnosticID;
@@ -217,15 +225,15 @@ public:
   void HandleDiagnostic(DiagnosticsEngine::Level DiagLevel,
                         const Diagnostic &Info) override;
 
-  /// \brief Sets \c HeaderFilter to the value configured for this file.
-  void BeginSourceFile(const LangOptions &LangOpts,
-                       const Preprocessor *PP) override;
-
   /// \brief Flushes the internal diagnostics buffer to the ClangTidyContext.
   void finish() override;
 
 private:
   void finalizeLastError();
+
+  /// \brief Returns the \c HeaderFilter constructed for the options set in the
+  /// context.
+  llvm::Regex* getHeaderFilter();
 
   /// \brief Updates \c LastErrorRelatesToUserCode and LastErrorPassesLineFilter
   /// according to the diagnostic \p Location.
@@ -243,4 +251,4 @@ private:
 } // end namespace tidy
 } // end namespace clang
 
-#endif // LLVM_CLANG_TOOLS_EXTRA_CLANG_TIDY_CLANG_TIDY_DIAGNOSTIC_CONSUMER_H
+#endif // LLVM_CLANG_TOOLS_EXTRA_CLANG_TIDY_CLANGTIDYDIAGNOSTICCONSUMER_H
