@@ -12,23 +12,15 @@ using namespace clang::ast_matchers;
 #include <string>
 
 namespace {
-
+#if 0
 std::string getExprText(const SourceManager &SM, const Expr &E) {
-  const auto &LocStart = E.getLocStart();
-  const auto &LocEnd = E.getLocEnd();
-  const char *CharStart = SM.getCharacterData(LocStart);
-  const char *CharEnd = SM.getCharacterData(LocEnd);
-  return std::string(CharStart, CharEnd + 1);
-}
-
-std::string getExprText(const SourceManager &SM, const MemberExpr &E) {
   const auto &LocStart = E.getLocStart();
   const auto &LocEnd = E.getLocEnd();
   const char *CharStart = SM.getCharacterData(LocStart);
   const char *CharEnd = SM.getCharacterData(LocEnd);
   if (CharStart == CharEnd)
     return {};
-  return std::string(CharStart, CharEnd - 1);
+  return std::string(CharStart, CharEnd + 1);
 }
 
 const Expr *ignoreConstCasts(const Expr *ME) {
@@ -47,6 +39,28 @@ const Expr *ignoreConstCasts(const Expr *ME) {
     return E;
   }
 }
+#endif // 0
+
+std::string getExprText(const SourceManager &SM, const MemberExpr &E) {
+  const auto &LocStart = E.getLocStart();
+  const auto &LocEnd = E.getLocEnd();
+  const char *CharStart = SM.getCharacterData(LocStart);
+  const char *CharEnd = SM.getCharacterData(LocEnd);
+  errs() << "\n-------->" << std::string(CharStart, 10) << "<--------\n";
+  errs() << "\n-------->" << std::string(CharEnd, 10) << "<--------\n";
+  if (CharStart == CharEnd)
+    return {};
+  std::string text(CharStart, CharEnd);
+  errs() << "\n-------->" << text << "<--------\n";
+  if (text.length() > 2 && text.substr(text.length() - 2) == "->") {
+    errs() << "\ntrimmed for ->: " << text << "\n";
+    return text.substr(0, text.length() - 2);
+  } else if (text.length() > 1 && text.back() == '.') {
+    errs() << "\ntrimmed for .\n";
+    return text.substr(0, text.length() - 1);
+  }
+  return text;
+}
 }
 
 void MemberBeginReplacer::run(const MatchFinder::MatchResult &Result) {
@@ -59,16 +73,19 @@ void MemberBeginReplacer::run(const MatchFinder::MatchResult &Result) {
     return;
   }
   auto RefName = getExprText(SM, *Member);
-  if (RefName.empty())
+  errs() << "\n" << (RefName.empty() ? std::string("Empty Name") : RefName)
+         << "\n";
+  if (RefName.empty() ||
+      RefName == "this") // It's calling this->begin() or begin()
     return;
-  bool IsConst = Member->getBase()->getType().isConstQualified();
 
   auto MethodName = MemberCall->getMethodDecl()->getNameAsString();
-  if (IsConst) {
-    MethodName = "c" + MethodName;
-    const auto *NonConstExpr = ignoreConstCasts(Member->getBase());
-    RefName = getExprText(SM, *NonConstExpr);
-  }
+  // bool IsConst = Member->getBase()->getType().isConstQualified();
+  // if (IsConst) {
+  //   MethodName = "c" + MethodName;
+  //   const auto *NonConstExpr = ignoreConstCasts(Member->getBase());
+  //   RefName = getExprText(SM, *NonConstExpr);
+  // }
   const auto StartLoc = SM.getSpellingLoc(MemberCall->getLocStart());
   const auto EndLoc = SM.getSpellingLoc(MemberCall->getLocEnd());
 

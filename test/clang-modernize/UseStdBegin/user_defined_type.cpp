@@ -9,6 +9,14 @@ struct MyVector {
   int begin() const { return 0; }
   int end() { return 10; }
   int end() const { return 10; }
+
+  void foo() {
+    begin();
+    // CHECK: begin();
+
+    this->begin();
+    // CHECK: this->begin();
+  }
 };
 
 void func() {
