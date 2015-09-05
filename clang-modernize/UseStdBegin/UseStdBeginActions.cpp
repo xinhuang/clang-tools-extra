@@ -26,6 +26,8 @@ std::string getExprText(const SourceManager &SM, const MemberExpr &E) {
   const auto &LocEnd = E.getLocEnd();
   const char *CharStart = SM.getCharacterData(LocStart);
   const char *CharEnd = SM.getCharacterData(LocEnd);
+  if (CharStart == CharEnd)
+    return {};
   return std::string(CharStart, CharEnd - 1);
 }
 
@@ -57,6 +59,8 @@ void MemberBeginReplacer::run(const MatchFinder::MatchResult &Result) {
     return;
   }
   auto RefName = getExprText(SM, *Member);
+  if (RefName.empty())
+    return;
   bool IsConst = Member->getBase()->getType().isConstQualified();
 
   auto MethodName = MemberCall->getMethodDecl()->getNameAsString();
