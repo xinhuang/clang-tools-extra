@@ -41,32 +41,29 @@ const Expr *ignoreConstCasts(const Expr *ME) {
 }
 #endif // 0
 
-void dropParenthesis(std::string &s) {
-  if (s.length() < 2)
-    return;
-  while (s.front() == '(' && s.back() == ')')
-    s = s.substr(1, s.length() - 2);
+void dropParenthesis(const char *&begin, const char *&end) {
+  while (begin[0] == '(' && end[-1] == ')') {
+    begin += 1;
+    end -= 1;
+  }
 }
 
 std::string getExprText(const SourceManager &SM, const MemberExpr &E) {
   const auto &LocStart = E.getLocStart();
-  const auto &LocEnd = E.getLocEnd();
+  const auto &LocEnd = E.getMemberLoc();
   const char *CharStart = SM.getCharacterData(LocStart);
   const char *CharEnd = SM.getCharacterData(LocEnd);
-  errs() << "\n-------->" << std::string(CharStart, 10) << "<--------\n";
-  errs() << "\n-------->" << std::string(CharEnd, 10) << "<--------\n";
-  if (CharStart == CharEnd)
+  if (E.isArrow())
+    CharEnd -= 2;
+  else
+    CharEnd -= 1;
+
+  if (CharStart > CharEnd)
     return {};
+  dropParenthesis(CharStart, CharEnd);
+
   std::string text(CharStart, CharEnd);
-  errs() << "\n-------->" << text << "<--------\n";
-  if (text.length() > 2 && text.substr(text.length() - 2) == "->") {
-    errs() << "\ntrimmed for ->: " << text << "\n";
-    text = text.substr(0, text.length() - 2);
-  } else if (text.length() > 1 && text.back() == '.') {
-    errs() << "\ntrimmed for .\n";
-    text = text.substr(0, text.length() - 1);
-  }
-  dropParenthesis(text);
+
   if (E.isArrow())
     text = "*" + text;
   return text;
