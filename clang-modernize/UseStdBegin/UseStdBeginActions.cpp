@@ -41,6 +41,13 @@ const Expr *ignoreConstCasts(const Expr *ME) {
 }
 #endif // 0
 
+void dropParenthesis(std::string &s) {
+  if (s.length() < 2)
+    return;
+  while (s.front() == '(' && s.back() == ')')
+    s = s.substr(1, s.length() - 2);
+}
+
 std::string getExprText(const SourceManager &SM, const MemberExpr &E) {
   const auto &LocStart = E.getLocStart();
   const auto &LocEnd = E.getLocEnd();
@@ -54,11 +61,14 @@ std::string getExprText(const SourceManager &SM, const MemberExpr &E) {
   errs() << "\n-------->" << text << "<--------\n";
   if (text.length() > 2 && text.substr(text.length() - 2) == "->") {
     errs() << "\ntrimmed for ->: " << text << "\n";
-    return text.substr(0, text.length() - 2);
+    text = text.substr(0, text.length() - 2);
   } else if (text.length() > 1 && text.back() == '.') {
     errs() << "\ntrimmed for .\n";
-    return text.substr(0, text.length() - 1);
+    text = text.substr(0, text.length() - 1);
   }
+  dropParenthesis(text);
+  if (E.isArrow())
+    text = "*" + text;
   return text;
 }
 }

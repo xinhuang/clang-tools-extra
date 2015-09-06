@@ -15,7 +15,10 @@ struct MyVector {
     // CHECK: begin();
 
     this->begin();
-    // CHECK: this->begin();
+    // CHECK: std::begin(*this);
+
+    (*this).begin();
+    // CHECK: std::begin(*this);
   }
 };
 
